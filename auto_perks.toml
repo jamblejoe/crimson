@@ -26,8 +26,11 @@ fallback = "first"
 
 # Highest priority first. The best-ranked perk among the offered ones is picked.
 priority = [
+    "Telekinetic",
     "Perk Expert",
     "Perk Master",
+    "Bonus Magnet",
+    "Bonus Economist",
     "Bloody Mess",
     "Lean Mean Exp Machine",
     "Uranium Filled Bullets",
@@ -40,13 +43,9 @@ priority = [
     "Dodger",
     "Ninja",
     "Reflex Boosted",
-    "Telekinetic",
-    "Bonus Magnet",
-    "Bonus Economist",
     "Long Distance Runner",
     "Poison Bullets",
     "Pyrokinetic",
-    "Evil Eyes",
     "Radioactive",
     "Toxic Avenger",
     "Veins of Poison",
@@ -75,6 +74,7 @@ priority = [
     "Lifeline 50-50",
     "My Favourite Weapon",
     "Ammunition Within",
+    "Evil Eyes",
 ]
 
 # Never picked by the "first" fallback (unless every offered perk is listed here).
