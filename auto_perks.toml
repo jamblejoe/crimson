@@ -1,0 +1,91 @@
+# Auto perk picker (crimsonland-modified mod).
+#
+# When a perk becomes available, the game picks one right away and keeps
+# playing: no perk menu, no pause. Edits apply when the next run starts.
+# Active in Survival and Quests; the tutorial keeps the perk menu.
+#
+# Perk names ignore case, spaces and punctuation ("ammo maniac" works).
+# All perks:
+#   Bloody Mess, Sharpshooter, Fastloader, Lean Mean Exp Machine, Long Distance Runner, Pyrokinetic,
+#   Instant Winner, Grim Deal, Alternate Weapon, Plaguebearer, Evil Eyes, Ammo Maniac, Radioactive,
+#   Fastshot, Fatal Lottery, Random Weapon, Mr. Melee, Anxious Loader, Final Revenge, Telekinetic,
+#   Perk Expert, Unstoppable, Regression Bullets, Infernal Contract, Poison Bullets, Dodger,
+#   Bonus Magnet, Uranium Filled Bullets, Doctor, Monster Vision, Hot Tempered, Bonus Economist,
+#   Thick Skinned, Barrel Greaser, Ammunition Within, Veins of Poison, Toxic Avenger, Regeneration,
+#   Pyromaniac, Ninja, Highlander, Jinxed, Perk Master, Reflex Boosted, Greater Regeneration,
+#   Breathing Room, Death Clock, My Favourite Weapon, Bandage, Angry Reloader, Ion Gun Master,
+#   Stationary Reloader, Man Bomb, Fire Caugh, Living Fortress, Tough Reloader, Lifeline 50-50
+
+# Set to false to get the normal perk menu back.
+enabled = true
+
+# What to do when none of the offered perks is in `priority`:
+#   "first" - take the first offered perk that is not in `avoid`
+#   "menu"  - open the normal perk menu and choose yourself
+fallback = "first"
+
+# Highest priority first. The best-ranked perk among the offered ones is picked.
+priority = [
+    "Perk Expert",
+    "Perk Master",
+    "Bloody Mess",
+    "Lean Mean Exp Machine",
+    "Uranium Filled Bullets",
+    "Fastshot",
+    "Fastloader",
+    "Ammo Maniac",
+    "Regeneration",
+    "Greater Regeneration",
+    "Thick Skinned",
+    "Dodger",
+    "Ninja",
+    "Reflex Boosted",
+    "Telekinetic",
+    "Bonus Magnet",
+    "Bonus Economist",
+    "Long Distance Runner",
+    "Poison Bullets",
+    "Pyrokinetic",
+    "Evil Eyes",
+    "Radioactive",
+    "Toxic Avenger",
+    "Veins of Poison",
+    "Living Fortress",
+    "Man Bomb",
+    "Fire Caugh",
+    "Hot Tempered",
+    "Sharpshooter",
+    "Angry Reloader",
+    "Stationary Reloader",
+    "Tough Reloader",
+    "Anxious Loader",
+    "Barrel Greaser",
+    "Doctor",
+    "Alternate Weapon",
+    "Ion Gun Master",
+    "Pyromaniac",
+    "Plaguebearer",
+    "Final Revenge",
+    "Unstoppable",
+    "Mr. Melee",
+    "Regression Bullets",
+    "Monster Vision",
+    "Instant Winner",
+    "Bandage",
+    "Lifeline 50-50",
+    "My Favourite Weapon",
+    "Ammunition Within",
+]
+
+# Never picked by the "first" fallback (unless every offered perk is listed here).
+# Perks in neither list count as lowest priority.
+avoid = [
+    "Grim Deal",
+    "Fatal Lottery",
+    "Infernal Contract",
+    "Death Clock",
+    "Jinxed",
+    "Highlander",
+    "Random Weapon",
+    "Breathing Room",
+]

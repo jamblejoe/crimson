@@ -160,6 +160,12 @@ def replay_playback_view(tmp_path: Path, assets_dir: Path) -> tuple[replay_playb
     return view, console
 
 
+@pytest.fixture(autouse=True)
+def _auto_perks_mod_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Mod: upstream tests expect the perk menu; tests/mods turns the auto picker back on."""
+    monkeypatch.setenv("CRIMSON_AUTO_PERKS", "0")
+
+
 @pytest.fixture(scope="session")
 def assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"

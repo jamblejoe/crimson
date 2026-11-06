@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import difflib
-import fcntl
 import hashlib
 import json
 import os
@@ -5504,6 +5503,8 @@ def _scratch_build_directory(config: ScratchConfig) -> Path:
 
 @contextmanager
 def _locked_staging_dir(path: Path) -> Generator[Path]:
+    import fcntl  # Unix-only; imported here so the module loads on Windows.
+
     with open(path.with_name(path.name + ".lock"), "w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         shutil.rmtree(path, ignore_errors=True)

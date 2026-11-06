@@ -28,6 +28,8 @@ from ..game_states import GameStateId
 from ..input_codes import PadCode, pad_nav_pressed
 from ..leaderboard import Leaderboard
 from ..local_input import PAD_AIM_DIST_MUL_DEFAULT, LocalInputInterpreter
+from ..mods.auto_perks import AutoPerkConfig, auto_perk_config_path, choose_perk, load_auto_perk_config
+from ..perks.ids import perk_display_name
 from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import HighScoreRecord
 from ..quests.custom import CustomQuest
@@ -169,6 +171,10 @@ class BaseGameplayMode:
         # The level-up prompt and perk menu `gameplay_update_and_render` runs outside Rush and Typ-o.
         self._perk_prompt = PerkPromptState()
         self._perk_menu_requested = False
+        # Mod: auto perk picker, loaded from `auto_perks.toml` when a run opens.
+        self._auto_perks = AutoPerkConfig(enabled=False)
+        # The pending count when auto-pick handed a choice to the menu; the player decides until it changes.
+        self._auto_perks_menu_pending = 0
         self._counted_level = 1
         self._game_over_banner = "reaper"
 
@@ -419,8 +425,41 @@ class BaseGameplayMode:
         self._perk_menu_requested = True
         self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 
+    def _load_auto_perks(self) -> None:
+        config, warnings = load_auto_perk_config(auto_perk_config_path(self._base_dir))
+        self._auto_perks = config
+        self._auto_perks_menu_pending = 0
+        if self._console is not None:
+            for line in warnings:
+                self._console.log.log(line)
+
+    def _auto_perks_active(self) -> bool:
+        # Tutorial teaches the perk menu; Rush and Typ-o have no perks.
+        if not self._auto_perks.enabled or self.state.game_mode not in (GameMode.SURVIVAL, GameMode.QUESTS):
+            return False
+        pending = int(self.state.perk_selection.pending_count)
+        if self._auto_perks_menu_pending and pending != self._auto_perks_menu_pending:
+            self._auto_perks_menu_pending = 0
+        return self._auto_perks_menu_pending == 0
+
+    def _update_auto_perks(self) -> None:
+        """Mod: request the perk menu as soon as a perk is pending; `_on_tick_applied` picks from it."""
+
+        if self._paused or self._perk_menu.active or self._ui_pending_perk_count() <= 0:
+            return
+        players = self.world.players
+        alive = players[0].health > 0.0 or (len(players) == 2 and players[1].health > 0.0)
+        if alive:
+            self._request_perk_menu()
+
     def _update_perk_ui(self, *, dt_ui_ms: float) -> None:
         """The level-up prompt and perk menu input of `gameplay_update_and_render`."""
+
+        if self._auto_perks_active() and not self._perk_menu.active:
+            self._update_auto_perks()
+            self._perk_prompt.tick_timer(pending_count=0, menu_active=False, dt_ui_ms=float(dt_ui_ms))
+            self._perk_menu.tick_timeline()
+            return
 
         perk_ctx = self._perk_menu_ui_context()
         pending_count = self._ui_pending_perk_count()
@@ -751,6 +790,7 @@ class BaseGameplayMode:
         self._perk_prompt.reset()
         self._perk_menu.reset()
         self._perk_menu_requested = False
+        self._load_auto_perks()
         self._counted_level = 1
 
         # Native game_over/victory transitions call `music_fade_out_all` on menu + extra
@@ -1012,8 +1052,25 @@ class BaseGameplayMode:
             self._pause_pending = False
             self._ui_timeline.begin()
         if requested and tick.events.perk_menu_opened:
+            if self._auto_perks_active() and self._auto_pick_perk():
+                # The pick rides the very next tick; the run never pauses.
+                return True
             self._perk_menu.open_menu()
             return False
+        return True
+
+    def _auto_pick_perk(self) -> bool:
+        """Mod: queue a pick from the menu that just opened. False leaves the choice to the player."""
+
+        choices = perk_selection_prepared_choices(self.state)
+        choice_index = choose_perk(choices, self._auto_perks)
+        if choice_index is None:
+            self._auto_perks_menu_pending = int(self.state.perk_selection.pending_count)
+            return False
+        self.record_perk_pick_command(choice_index, player_index=0)
+        if self._console is not None:
+            name = perk_display_name(choices[choice_index], violence_disabled=self.config.display.violence_disabled)
+            self._console.log.log(f"auto_perks: picked {name}")
         return True
 
     def _run_deterministic_session_ticks(
